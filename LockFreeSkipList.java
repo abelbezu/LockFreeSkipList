@@ -131,6 +131,30 @@ public class LockFreeSkipList<T> {
             return (curr.key == key);
         }
     }
+    
+    boolean contains(T x) {
+        int bottomLevel = 0;
+        int v = x.hashCode();
+        boolean[] marked = {false};
+        Node<T> pred = head, curr = null, succ = null;
+        for (int level = MAX_LEVEL; level >= bottomLevel; level--) {
+            curr = pred.next[level].getReference();
+            while (true) {
+                succ = curr.next[level].get(marked);
+                while (marked[0]) {
+                    curr = pred.next[level].getReference();
+                    succ = curr.next[level].get(marked);
+                }
+                if (curr.key < v){
+                    pred = curr;
+                    curr = succ;
+                } else {
+                    break;
+                }
+            }
+        }
+        return (curr.key == v);
+    }
     private static final class Node<T> {
         final T value;
         final int key;
@@ -156,30 +180,6 @@ public class LockFreeSkipList<T> {
             }
         }
 
-    }
-
-    boolean contains(T x) {
-        int bottomLevel = 0;
-        int v = x.hashCode();
-        boolean[] marked = {false};
-        Node<T> pred = head, curr = null, succ = null;
-        for (int level = MAX_LEVEL; level >= bottomLevel; level--) {
-            curr = pred.next[level].getReference();
-            while (true) {
-                succ = curr.next[level].get(marked);
-                while (marked[0]) {
-                    curr = pred.next[level].getReference();
-                    succ = curr.next[level].get(marked);
-                }
-                if (curr.key < v){
-                    pred = curr;
-                    curr = succ;
-                } else {
-                    break;
-                }
-            }
-        }
-        return (curr.key == v);
     }
 
 }
